@@ -9,10 +9,10 @@ on:
 jobs:
   test-backend:
     runs-on: ubuntu-latest
-
+    
     permissions:
       contents: read
-      id-token: write 
+      id-token: write
 
     steps:
       - name: Downloard-code
@@ -44,9 +44,14 @@ jobs:
       - name: Login to ACR
         if: github.ref == 'refs/heads/main'
         run: az acr login --name akshaycicdregistry --resource-group cicd-practice-rg
+
       - name: Tag image for ACR
         if: github.ref == 'refs/heads/main'
         run: docker tag practice-app:v1 akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v1
+
       - name: Push image to ACR
         if: github.ref == 'refs/heads/main'
         run: docker push akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v1
+
+          
+      
