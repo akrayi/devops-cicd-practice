@@ -1,39 +1,56 @@
 name: Application-CI-Practice
 
 on:
- push:
-   branches:
-     - main
-     - develop
+  push:
+    branches:
+      - main
+      - develop
+
+# Process runs one at a time so they cannot choose the same version.
+concurrency:
+  group: practice-app-releases
+  queue: max
 
 jobs:
   test-backend:
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: read
       id-token: write
 
+    env:
+      ACR_NAME: akshaycicdregistry
+      ACR_SERVER: akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io
+      IMAGE_NAME: practice-app-releases
+
     steps:
-      - name: Downloard-code
+      - name: Download code
         uses: actions/checkout@v6
-      - name: Setup-python
+
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: python-version
+
+      - name: Check Python version
         run: python --version
-      - name: Inspect-project
+
+      - name: Inspect project
         run: |
           pwd
           ls
           cat requirements.txt
-      - name: Install-dependencies
+
+      - name: Install dependencies
         run: python -m pip install -r requirements.txt
-      - name: Run-test
+
+      - name: Run tests
         run: python -m unittest -v
-      - name: Build-Docker-image
-        run: docker build -t practice-app:v${{ github.run_number }} .
+
+      - name: Build Docker image
+        run: docker build -t "$IMAGE_NAME:build" .
+
       - name: Login to Azure
         if: github.ref == 'refs/heads/main'
         uses: azure/login@v3
@@ -41,17 +58,67 @@ jobs:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
       - name: Login to ACR
         if: github.ref == 'refs/heads/main'
-        run: az acr login --name akshaycicdregistry --resource-group cicd-practice-rg
+        run: |
+          az acr login \
+            --name "$ACR_NAME" \
+            --resource-group cicd-practice-rg
+
+      - name: Calculate next image version
+        if: github.ref == 'refs/heads/main'
+        shell: python
+        run: |
+          import json
+          import os
+          import re
+          import subprocess
+
+          registry = os.environ["ACR_NAME"]
+          repository = os.environ["IMAGE_NAME"]
+
+          def azure_json(*arguments):
+              result = subprocess.check_output(
+                  ["az", *arguments, "--output", "json"],
+                  text=True
+              )
+              return json.loads(result)
+
+          repositories = azure_json(
+              "acr", "repository", "list",
+              "--name", registry
+          )
+
+          tags = []
+          if repository in repositories:
+              tags = azure_json(
+                  "acr", "repository", "show-tags",
+                  "--name", registry,
+                  "--repository", repository
+              )
+
+          versions = [
+              int(tag[1:])
+              for tag in tags
+              if re.fullmatch(r"v[0-9]+", tag)
+          ]
+
+          next_version = max(versions, default=0) + 1
+          image_tag = f"v{next_version}"
+
+          with open(os.environ["GITHUB_ENV"], "a") as env_file:
+              env_file.write(f"IMAGE_TAG={image_tag}\n")
+
+          print(f"Next image version: {image_tag}")
 
       - name: Tag image for ACR
         if: github.ref == 'refs/heads/main'
-        run: docker tag practice-app:v${{ github.run_number }} akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v${{ github.run_number }}
+        run: |
+          docker tag "$IMAGE_NAME:build" \
+            "$ACR_SERVER/$IMAGE_NAME:$IMAGE_TAG"
 
       - name: Push image to ACR
         if: github.ref == 'refs/heads/main'
-        run: docker push akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v${{ github.run_number }}
-
-          
-      
+        run: |
+          docker push "$ACR_SERVER/$IMAGE_NAME:$IMAGE_TAG"
