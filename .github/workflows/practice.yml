@@ -47,11 +47,11 @@ jobs:
 
       - name: Tag image for ACR
         if: github.ref == 'refs/heads/main'
-        run: docker tag practice-app:v1 akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v1
+        run: docker tag practice-app:v${{ github.run_number }} akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v${{ github.run_number }}
 
       - name: Push image to ACR
         if: github.ref == 'refs/heads/main'
-        run: docker push akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v1
+        run: docker push akshaycicdregistry-gwc8f9azf9g5aha4.azurecr.io/practice-app:v${{ github.run_number }}
 
           
       
