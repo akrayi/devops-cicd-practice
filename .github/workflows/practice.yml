@@ -43,4 +43,4 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       - name: Login to ACR
         if: github.ref == 'refs/heads/main'
-        run: az acr login --name akshaycicdregistry
+        run: az acr login --name akshaycicdregistry --resource-group cicd-practice-rg
