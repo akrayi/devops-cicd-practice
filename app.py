@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "<h1>Hello, Akshay! My image tags are now automatic.</h1>"
+    return "<h1>Hello, Akshay! Testing automatic image versions.</h1>"
 
 @app.route("/health")
 def health():
