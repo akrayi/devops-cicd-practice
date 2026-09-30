@@ -1,4 +1,4 @@
-name: Morning practice
+name: Python Practice
 
 on:
  push:
@@ -7,24 +7,22 @@ on:
      - develop
 
 jobs:
-  inspect-project:
+  prepare-app:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Download code
         uses: actions/checkout@v6
-      - name: set up python
+      - name: Prepare Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: check-python-version
+      - name: Check-python-version
         run: python --version
-      - name: Welcome
-        run: echo " Iam learning CI step by step"
-      - name: Inspect project
+      - name: Inspect repository
         run: |
           pwd
           ls
           cat requirements.txt
-      - name: install dependencies
+      - name: Install packages
         run: python -m pip install -r requirements.txt
