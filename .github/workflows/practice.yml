@@ -8,6 +8,8 @@ jobs:
   practice:
     runs-on: ubuntu-latest
     steps:
+      - name: Download repository code
+        uses: actions/checkout@v6
       - name: My first step
         run: echo "I am learning GitHub Actions"
       - name: Finish practice
