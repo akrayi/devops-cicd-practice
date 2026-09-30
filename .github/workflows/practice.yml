@@ -33,7 +33,7 @@ jobs:
       - name: Run-test
         run: python -m unittest -v
       - name: Build-Docker-image
-        run: docker build -t practice-app:v1 .
+        run: docker build -t practice-app:v${{ github.run_number }} .
       - name: Login to Azure
         if: github.ref == 'refs/heads/main'
         uses: azure/login@v3
