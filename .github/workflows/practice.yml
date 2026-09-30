@@ -1,0 +1,11 @@
+name: My First Automation
+
+on: push
+
+jobs:
+  say-hello:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Print a message
+        run: echo "Hello Akshay, my automation is running" 
