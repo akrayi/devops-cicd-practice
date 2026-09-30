@@ -1,21 +1,22 @@
-name: First 
+name: Morning practice
 
 on:
  push:
    branches:
      - main
+     - develop
+
 jobs:
-  practice:
+  inspect-project:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Download repository code
+      - name: Download code
         uses: actions/checkout@v6
-      - name: My first step
-        run: echo "I am learning GitHub Actions"
-      - name: Finish practice
-        run: echo "My second step is running"
-      - name: Show information
+      - name: Welcome
+        run: echo " Iam learning CI step by step"
+      - name: Inspect project
         run: |
-          echo "Checking the runner"
           pwd
           ls
+          cat requirements.txt
